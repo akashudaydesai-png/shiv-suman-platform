@@ -1,0 +1,475 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleCode {
+  SUPER_ADMIN
+  ADMIN
+  BRANCH_ADMIN
+  RECEPTIONIST
+  SUPERVISOR
+  TRAINER
+  STUDENT
+  ACCOUNTANT
+}
+
+enum AccessStatus {
+  ACTIVE
+  PAUSED
+  REMOVED
+}
+
+enum SlotStatus {
+  AVAILABLE
+  ENQUIRY_QUEUE
+  ADVANCE_BOOKED
+  ADMITTED
+  ON_LEAVE_TODAY
+  RUNNING
+  COMPLETED
+  CANCELLED
+}
+
+enum LeaveStatus {
+  CREATED
+  PENDING_ADMIN_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  LINK_CREATED
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum RtoCaseType {
+  INTERNAL_STUDENT
+  EXTERNAL_CUSTOMER
+}
+
+enum RtoStatus {
+  NEW
+  PAYMENT_PENDING
+  DOCUMENTS_RECEIVED
+  DOCUMENTS_READY
+  SUBMITTED_TO_RTO
+  COMPLETED
+  DELIVERED
+  ON_HOLD
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  phone        String?      @unique
+  passwordHash String
+  fullName     String
+  role         RoleCode
+  accessStatus AccessStatus @default(ACTIVE)
+  branchId     String?
+  branch       Branch?      @relation(fields: [branchId], references: [id])
+  student      StudentProfile?
+  staff        StaffProfile?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+}
+
+model Branch {
+  id              String    @id @default(cuid())
+  name            String
+  code            String    @unique
+  address         String?
+  startTime       String
+  endTime         String
+  lunchStartTime  String?
+  lunchEndTime    String?
+  slotDurationMin Int       @default(30)
+  users           User[]
+  slots           Slot[]
+  vehicles        Vehicle[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+}
+
+model StudentProfile {
+  id                  String            @id @default(cuid())
+  userId              String            @unique
+  user                User              @relation(fields: [userId], references: [id])
+  studentCode         String            @unique
+  firstName           String
+  middleName          String?
+  lastName            String
+  relationName        String?
+  gender              String?
+  dateOfBirth         DateTime?
+  bloodGroup          String?
+  education           String?
+  occupation          String?
+  addressJson         Json?
+  photoUrl            String?
+  signatureUrl        String?
+  learningLicenseNo   String?
+  learningLicenseDate DateTime?
+  learningLicenseValidity DateTime?
+  admissions          Admission[]
+  documents           Document[]
+  leaves              Leave[]
+  sessions            TrainingSession[]
+  rtoCases            RtoCase[]
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model StaffProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  employeeCode String   @unique
+  designation  String
+  salaryMeta   Json?
+  photoUrl     String?
+  signatureUrl String?
+  thumbUrl     String?
+  documents    Document[]
+  leaves       Leave[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PublicWebsitePage {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  seoTitle        String?
+  metaDescription String?
+  contentJson     Json
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BlogPost {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  title            String
+  seoTitle         String?
+  metaDescription  String?
+  tags             String[]
+  featuredImageUrl String?
+  featuredVideoUrl String?
+  redirectUrl      String?
+  content          String
+  publishedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Enquiry {
+  id                String    @id @default(cuid())
+  source            String
+  type              String
+  fullName          String
+  phone             String
+  email             String?
+  preferredBranchId String?
+  preferredSlotId   String?
+  courseOrService   String?
+  followUpAt        DateTime?
+  notes             String?
+  status            String    @default("NEW")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model AdvanceBooking {
+  id          String   @id @default(cuid())
+  fullName    String
+  phone       String
+  email       String?
+  branchId    String
+  slotId      String
+  amount      Int      @default(500)
+  paymentId   String?
+  admissionId String?
+  status      String   @default("BOOKED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Admission {
+  id              String         @id @default(cuid())
+  studentId       String
+  student         StudentProfile @relation(fields: [studentId], references: [id])
+  source          String
+  branchId        String
+  slotId          String?
+  planId          String
+  installmentMode Boolean        @default(true)
+  vehicleClasses  String[]
+  status          String         @default("DRAFT")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Document {
+  id         String          @id @default(cuid())
+  studentId  String?
+  student    StudentProfile? @relation(fields: [studentId], references: [id])
+  staffId    String?
+  staff      StaffProfile?   @relation(fields: [staffId], references: [id])
+  rtoCaseId  String?
+  rtoCase    RtoCase?        @relation(fields: [rtoCaseId], references: [id])
+  type       String
+  fileUrl    String
+  fileName   String?
+  mimeType   String?
+  sizeBytes  Int?
+  status     String          @default("UPLOADED")
+  verifiedAt DateTime?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model Plan {
+  id             String            @id @default(cuid())
+  name           String            @unique
+  durationDays   Int
+  vehicleClasses String[]
+  totalAmount    Int
+  active         Boolean           @default(true)
+  installments   PlanInstallment[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model PlanInstallment {
+  id              String   @id @default(cuid())
+  planId          String
+  plan            Plan     @relation(fields: [planId], references: [id])
+  sequence        Int
+  purpose         String
+  amount          Int
+  triggerEvent    String?
+  automationEvent String?
+  createdAt       DateTime @default(now())
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  studentId         String?
+  rtoCaseId         String?
+  planInstallmentId String?
+  amount            Int
+  status            PaymentStatus @default(LINK_CREATED)
+  provider          String        @default("RAZORPAY")
+  providerPaymentId String?
+  providerOrderId   String?
+  paymentLink       String?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model Receipt {
+  id              String   @id @default(cuid())
+  receiptNo       String   @unique
+  paymentId       String   @unique
+  customerName    String
+  amount          Int
+  remainingAmount Int
+  printableUrl    String?
+  createdAt       DateTime @default(now())
+}
+
+model RtoService {
+  id                 String    @id @default(cuid())
+  name               String    @unique
+  category           String
+  feeAmount          Int
+  formSchemaJson     Json
+  documentSchemaJson Json
+  active             Boolean   @default(true)
+  cases              RtoCase[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model RtoCase {
+  id            String          @id @default(cuid())
+  type          RtoCaseType
+  serviceId     String
+  service       RtoService      @relation(fields: [serviceId], references: [id])
+  studentId     String?
+  student       StudentProfile? @relation(fields: [studentId], references: [id])
+  customerJson  Json
+  status        RtoStatus       @default(NEW)
+  branchId      String
+  assignedToId  String?
+  statusHistory Json            @default("[]")
+  documents     Document[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Slot {
+  id        String     @id @default(cuid())
+  branchId  String
+  branch    Branch     @relation(fields: [branchId], references: [id])
+  startsAt  DateTime
+  endsAt    DateTime
+  status    SlotStatus @default(AVAILABLE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Leave {
+  id          String          @id @default(cuid())
+  studentId   String?
+  student     StudentProfile? @relation(fields: [studentId], references: [id])
+  staffId     String?
+  staff       StaffProfile?   @relation(fields: [staffId], references: [id])
+  leaveDate   DateTime
+  reason      String?
+  status      LeaveStatus     @default(CREATED)
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Vehicle {
+  id                      String            @id @default(cuid())
+  branchId                String
+  branch                  Branch            @relation(fields: [branchId], references: [id])
+  registrationNo          String            @unique
+  name                    String
+  fuelType                String?
+  fleetDeviceId           String?
+  cameraDeviceId          String?
+  liveLatitude            String?
+  liveLongitude           String?
+  liveLocationText        String?
+  dtcCodes                String?
+  fuelLevelPercent        Int?
+  harshBrakingCount       Int?
+  harshAccelerationCount  Int?
+  idleMinutes             Int?
+  liveOdometerKm          Int?
+  registrationValidFrom   DateTime?
+  registrationValidUpto   DateTime?
+  insuranceCompanyName    String?
+  insurancePolicyNumber   String?
+  insuranceValidFrom      DateTime?
+  insuranceValidUpto      DateTime?
+  pucCertificateNo        String?
+  pucValidFrom            DateTime?
+  pucValidUpto            DateTime?
+  odometerKm              Int?
+  healthStatus            String?
+  healthNotes             String?
+  active                  Boolean           @default(true)
+  sessions                TrainingSession[]
+  expenses                VehicleExpense[]
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+}
+
+model VehicleExpense {
+  id          String   @id @default(cuid())
+  vehicleId   String
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  type        String
+  amount      Int
+  expenseDate DateTime
+  odometerKm  Int?
+  vendorName  String?
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TrainingSession {
+  id            String         @id @default(cuid())
+  studentId     String
+  student       StudentProfile @relation(fields: [studentId], references: [id])
+  trainerUserId String
+  vehicleId     String
+  vehicle       Vehicle        @relation(fields: [vehicleId], references: [id])
+  branchId      String
+  startsAt      DateTime
+  endsAt        DateTime?
+  status        String         @default("REQUESTED")
+  fleetTripId   String?
+  recordingId   String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model DlTestEvent {
+  id          String   @id @default(cuid())
+  branchId    String
+  title       String
+  testDate    DateTime
+  status      String   @default("PLANNED")
+  studentIds  String[]
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model NotificationTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  event     String
+  channel   String
+  body      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationWorkflow {
+  id            String   @id @default(cuid())
+  name          String
+  event         String
+  conditionJson Json?
+  templateId    String
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  entityType  String
+  entityId    String
+  action      String
+  beforeJson  Json?
+  afterJson   Json?
+  createdAt   DateTime @default(now())
+}
+
+model DeleteRequest {
+  id            String    @id @default(cuid())
+  entityType    String
+  entityId      String
+  reason        String
+  requestedById String
+  status        String    @default("PENDING")
+  decidedById   String?
+  decidedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
