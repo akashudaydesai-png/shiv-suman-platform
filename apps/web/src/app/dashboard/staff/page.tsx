@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { DocumentUploadPanel } from "@/components/document-upload-panel";
 import { apiBaseUrl } from "@/lib/api";
+import { fallbackTrainers } from "@/lib/public-fallbacks";
 
 type User = {
   id: string;
@@ -14,6 +15,14 @@ type User = {
 };
 
 const staffDocumentTypes = ["PHOTO", "SIGNATURE", "THUMB", "AADHAAR", "PAN", "DRIVING_LICENSE", "POLICE_VERIFICATION", "EXPERIENCE_CERTIFICATE", "OTHER"];
+const demoStaff: User[] = fallbackTrainers.map((trainer, index) => ({
+  id: trainer.id,
+  fullName: trainer.fullName,
+  role: index === 0 ? "TRAINER" : index === 1 ? "SUPERVISOR" : "RECEPTIONIST",
+  accessStatus: "ACTIVE",
+  branch: trainer.branch,
+  staff: { id: `staff-${trainer.id}`, employeeCode: `EMP-DEMO-${index + 1}`, designation: index === 0 ? "Senior LMV Trainer" : "Operations Staff" }
+}));
 
 export default function StaffPage() {
   const [staff, setStaff] = useState<User[]>([]);
@@ -21,9 +30,16 @@ export default function StaffPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("shiv_suman_token");
+    if (token === "demo-vercel-session") {
+      setStaff(demoStaff);
+      return;
+    }
     Promise.all(["TRAINER", "RECEPTIONIST", "SUPERVISOR", "BRANCH_ADMIN", "ACCOUNTANT"].map((role) =>
       fetch(`${apiBaseUrl}/users?role=${role}`, { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.ok ? r.json() : [])
-    )).then((groups) => setStaff(groups.flat()));
+    )).then((groups) => {
+      const rows = groups.flat();
+      setStaff(rows.length ? rows : demoStaff);
+    }).catch(() => setStaff(demoStaff));
   }, []);
 
   return (

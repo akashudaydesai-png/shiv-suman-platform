@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiBaseUrl } from "@/lib/api";
+import { fallbackBranches } from "@/lib/public-fallbacks";
 
 type Branch = {
   id: string;
@@ -21,6 +22,16 @@ const emptyForm = {
   endTime: "20:00"
 };
 
+const demoBranches: Branch[] = fallbackBranches.map((branch, index) => ({
+  id: branch.id,
+  name: branch.name,
+  code: branch.code,
+  address: branch.address,
+  startTime: branch.startTime,
+  endTime: branch.endTime,
+  _count: { users: index === 0 ? 3 : 1, vehicles: index === 0 ? 2 : 1, slots: 24 }
+}));
+
 export default function BranchManagementPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [form, setForm] = useState(emptyForm);
@@ -29,10 +40,19 @@ export default function BranchManagementPage() {
 
   async function loadBranches() {
     const token = localStorage.getItem("shiv_suman_token");
-    const response = await fetch(`${apiBaseUrl}/branches`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (response.ok) setBranches(await response.json());
+    if (token === "demo-vercel-session") {
+      setBranches(demoBranches);
+      return;
+    }
+    try {
+      const response = await fetch(`${apiBaseUrl}/branches`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) setBranches(await response.json());
+      else setBranches(demoBranches);
+    } catch {
+      setBranches(demoBranches);
+    }
   }
 
   useEffect(() => {

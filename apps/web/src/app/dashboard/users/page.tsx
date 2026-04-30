@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { DocumentUploadPanel } from "@/components/document-upload-panel";
 import { apiBaseUrl } from "@/lib/api";
+import { fallbackBranches, fallbackTrainers } from "@/lib/public-fallbacks";
 
 type Branch = { id: string; name: string };
 
@@ -80,6 +81,30 @@ const emptyForm = {
   password: ""
 };
 
+const demoBranches: Branch[] = fallbackBranches.map((branch) => ({ id: branch.id, name: branch.name }));
+const demoUsers: User[] = fallbackTrainers.map((trainer, index) => ({
+  id: trainer.id,
+  fullName: trainer.fullName,
+  email: `demo.staff.${index + 1}@shivsuman.local`,
+  phone: index === 0 ? "7249105382" : "9123456780",
+  role: index === 0 ? "TRAINER" : index === 1 ? "SUPERVISOR" : "RECEPTIONIST",
+  accessStatus: "ACTIVE",
+  branchId: demoBranches[index % demoBranches.length]?.id,
+  branch: trainer.branch,
+  staff: {
+    id: `staff-${trainer.id}`,
+    employeeCode: `EMP-DEMO-${index + 1}`,
+    designation: index === 0 ? "Senior LMV Trainer" : "Operations Staff",
+    salaryMeta: {
+      fatherFullName: "PROFILE READY",
+      bloodGroup: index === 0 ? "A+" : "O+",
+      education: "DRIVING OPERATIONS",
+      salary: index === 0 ? 28000 : 22000,
+      address: { addressLine1: "Kolhapur", state: "Maharashtra" }
+    }
+  }
+}));
+
 function toUpperTrim(value: string) {
   return value.toUpperCase().replace(/\s+/g, " ").trimStart();
 }
@@ -120,9 +145,25 @@ export default function UsersPage() {
   }
 
   async function loadData() {
-    const [usersResponse, branchesResponse] = await Promise.all([authFetch("/users"), authFetch("/branches")]);
-    if (usersResponse.ok) setUsers(await usersResponse.json());
-    if (branchesResponse.ok) setBranches(await branchesResponse.json());
+    if (localStorage.getItem("shiv_suman_token") === "demo-vercel-session") {
+      setUsers(demoUsers);
+      setBranches(demoBranches);
+      return;
+    }
+    try {
+      const [usersResponse, branchesResponse] = await Promise.all([authFetch("/users"), authFetch("/branches")]);
+      if (usersResponse.ok) {
+        const rows = await usersResponse.json();
+        setUsers(rows.length ? rows : demoUsers);
+      } else setUsers(demoUsers);
+      if (branchesResponse.ok) {
+        const rows = await branchesResponse.json();
+        setBranches(rows.length ? rows : demoBranches);
+      } else setBranches(demoBranches);
+    } catch {
+      setUsers(demoUsers);
+      setBranches(demoBranches);
+    }
   }
 
   useEffect(() => {

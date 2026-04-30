@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { apiBaseUrl } from "@/lib/api";
+import { fallbackBranches, fallbackCourses } from "@/lib/public-fallbacks";
 
 type Installment = { id: string; sequence: number; purpose: string; amount: number };
 type Branch = { id: string; name: string; code: string };
@@ -28,6 +29,14 @@ const emptyForm = {
   installments: emptyInstallments
 };
 
+const demoBranches: Branch[] = fallbackBranches.map((branch) => ({ id: branch.id, name: branch.name, code: branch.code }));
+const demoPlans: Plan[] = fallbackCourses.map((course) => ({
+  ...course,
+  active: true,
+  branchId: null,
+  branch: null
+}));
+
 export default function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -44,13 +53,31 @@ export default function PlansPage() {
   }
 
   async function loadPlans() {
-    const response = await authFetch("/plans?includeInactive=true");
-    if (response.ok) setPlans(await response.json());
+    if (localStorage.getItem("shiv_suman_token") === "demo-vercel-session") {
+      setPlans(demoPlans);
+      return;
+    }
+    try {
+      const response = await authFetch("/plans?includeInactive=true");
+      if (response.ok) setPlans(await response.json());
+      else setPlans(demoPlans);
+    } catch {
+      setPlans(demoPlans);
+    }
   }
 
   async function loadBranches() {
-    const response = await authFetch("/branches");
-    if (response.ok) setBranches(await response.json());
+    if (localStorage.getItem("shiv_suman_token") === "demo-vercel-session") {
+      setBranches(demoBranches);
+      return;
+    }
+    try {
+      const response = await authFetch("/branches");
+      if (response.ok) setBranches(await response.json());
+      else setBranches(demoBranches);
+    } catch {
+      setBranches(demoBranches);
+    }
   }
 
   useEffect(() => {

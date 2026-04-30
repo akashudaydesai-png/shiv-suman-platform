@@ -5,6 +5,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DocumentUploadPanel } from "@/components/document-upload-panel";
 import { apiBaseUrl } from "@/lib/api";
+import { fallbackBranches, fallbackCourses } from "@/lib/public-fallbacks";
 
 type Branch = { id: string; name: string; startTime: string; endTime: string };
 type PlanInstallment = { id: string; sequence: number; purpose: string; amount: number };
@@ -410,6 +411,48 @@ const emptyForm = {
   learningLicenseValidity: ""
 };
 
+const demoBranches: Branch[] = fallbackBranches.map((branch) => ({
+  id: branch.id,
+  name: branch.name,
+  startTime: branch.startTime,
+  endTime: branch.endTime
+}));
+
+const demoPlans: Plan[] = fallbackCourses.map((course) => ({
+  id: course.id,
+  name: course.name,
+  branchId: null,
+  durationDays: course.durationDays,
+  vehicleClasses: course.vehicleClasses,
+  totalAmount: course.totalAmount,
+  installments: course.installments
+}));
+
+const demoStudents: User[] = [
+  {
+    id: "demo-student-akash",
+    fullName: "AKASH UDAYRAJ DESAI",
+    phone: "7249105382",
+    branch: { name: "Waterfront Rankala" },
+    student: { id: "demo-student-profile-akash", studentCode: "ST-02X-2604-001", learningLicenseNo: null }
+  },
+  {
+    id: "demo-student-shivani",
+    fullName: "SHIVANI KULKARNI",
+    phone: "7744668520",
+    branch: { name: "Takala" },
+    student: { id: "demo-student-profile-shivani", studentCode: "ST-TAK-2604-002", learningLicenseNo: "Pending" }
+  }
+];
+
+const demoEnquiries: EnquiryLead[] = [
+  { id: "demo-enquiry-1", enquiryCode: "ENQ2601", fullName: "ROHAN PATIL", phone: "9876543210", email: null, preferredBranchId: "branch-rankala", preferredSlotId: "09:00", courseOrService: "20 Days With 4 Wheeler License" }
+];
+
+const demoAdvanceBookings: AdvanceBookingLead[] = [
+  { id: "demo-booking-1", bookingCode: "BK2601", fullName: "SAKSHI JADHAV", phone: "9123456780", email: null, branchId: "branch-rankala", slotId: "10:30", status: "BOOKED" }
+];
+
 const adminTabs: Array<{ key: StudentAdminTab; label: string; description: string }> = [
   { key: "students", label: "Students", description: "All active student records and direct profile access." },
   { key: "swap-students", label: "Swap Students", description: "Slot movement audit records for students." },
@@ -564,24 +607,52 @@ export default function StudentsPage() {
   }
 
   async function loadData() {
-    const [studentsResponse, branchesResponse, plansResponse, enquiriesResponse, bookingsResponse] = await Promise.all([
-      authFetch("/users?role=STUDENT"),
-      authFetch("/branches"),
-      authFetch("/plans"),
-      authFetch("/enquiries"),
-      authFetch("/advance-bookings")
-    ]);
-    if (studentsResponse.ok) setStudents(await studentsResponse.json());
-    if (branchesResponse.ok) setBranches(await branchesResponse.json());
-    if (plansResponse.ok) setPlans(await plansResponse.json());
-    if (enquiriesResponse.ok) setEnquiries(await enquiriesResponse.json());
-    if (bookingsResponse.ok) setAdvanceBookings(await bookingsResponse.json());
+    if (localStorage.getItem("shiv_suman_token") === "demo-vercel-session") {
+      setStudents(demoStudents);
+      setBranches(demoBranches);
+      setPlans(demoPlans);
+      setEnquiries(demoEnquiries);
+      setAdvanceBookings(demoAdvanceBookings);
+      return;
+    }
+    try {
+      const [studentsResponse, branchesResponse, plansResponse, enquiriesResponse, bookingsResponse] = await Promise.all([
+        authFetch("/users?role=STUDENT"),
+        authFetch("/branches"),
+        authFetch("/plans"),
+        authFetch("/enquiries"),
+        authFetch("/advance-bookings")
+      ]);
+      if (studentsResponse.ok) {
+        const rows = await studentsResponse.json();
+        setStudents(rows.length ? rows : demoStudents);
+      } else setStudents(demoStudents);
+      if (branchesResponse.ok) {
+        const rows = await branchesResponse.json();
+        setBranches(rows.length ? rows : demoBranches);
+      } else setBranches(demoBranches);
+      if (plansResponse.ok) {
+        const rows = await plansResponse.json();
+        setPlans(rows.length ? rows : demoPlans);
+      } else setPlans(demoPlans);
+      if (enquiriesResponse.ok) setEnquiries(await enquiriesResponse.json());
+      else setEnquiries(demoEnquiries);
+      if (bookingsResponse.ok) setAdvanceBookings(await bookingsResponse.json());
+      else setAdvanceBookings(demoAdvanceBookings);
+    } catch {
+      setStudents(demoStudents);
+      setBranches(demoBranches);
+      setPlans(demoPlans);
+      setEnquiries(demoEnquiries);
+      setAdvanceBookings(demoAdvanceBookings);
+    }
   }
 
   useEffect(() => { loadData(); }, []);
   useEffect(() => {
     let mounted = true;
     const intervalId = setInterval(async () => {
+      if (localStorage.getItem("shiv_suman_token") === "demo-vercel-session") return;
       const response = await authFetch("/branches");
       if (!mounted || !response.ok) return;
       setBranches(await response.json());
