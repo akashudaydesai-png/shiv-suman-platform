@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiBaseUrl, isHostedDemoMode } from "@/lib/api";
 
 type LoginState = {
   status: "idle" | "loading" | "success" | "error";
@@ -14,11 +15,36 @@ export function LoginForm() {
 
   async function submitLogin() {
     setState({ status: "loading", message: "Checking login..." });
-    const response = await fetch("http://127.0.0.1:4000/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier, password })
-    });
+
+    if (isHostedDemoMode()) {
+      localStorage.setItem("shiv_suman_token", "demo-vercel-session");
+      localStorage.setItem("shiv_suman_user", JSON.stringify({
+        id: "demo-admin",
+        fullName: "Akash Uday Desai",
+        email: identifier,
+        role: "ADMIN"
+      }));
+      setState({ status: "success", message: "Demo login ready. Opening dashboard..." });
+      window.location.href = "/dashboard/admin";
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+    let response: Response;
+    try {
+      response = await fetch(`${apiBaseUrl}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier, password }),
+        signal: controller.signal
+      });
+    } catch {
+      setState({ status: "error", message: "API is not reachable. Start the local API or add NEXT_PUBLIC_API_URL on Vercel." });
+      return;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       setState({ status: "error", message: "Login failed. Check email/phone and password." });
