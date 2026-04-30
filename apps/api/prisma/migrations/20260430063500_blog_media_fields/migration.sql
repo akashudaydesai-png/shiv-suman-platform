@@ -1,0 +1,2 @@
+ALTER TABLE "BlogPost" ADD COLUMN IF NOT EXISTS "featuredVideoUrl" TEXT;
+ALTER TABLE "BlogPost" ADD COLUMN IF NOT EXISTS "redirectUrl" TEXT;

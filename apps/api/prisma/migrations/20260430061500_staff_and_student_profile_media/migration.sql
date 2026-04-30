@@ -1,0 +1,5 @@
+ALTER TABLE "StaffProfile" ADD COLUMN IF NOT EXISTS "photoUrl" TEXT;
+ALTER TABLE "StaffProfile" ADD COLUMN IF NOT EXISTS "signatureUrl" TEXT;
+ALTER TABLE "StaffProfile" ADD COLUMN IF NOT EXISTS "thumbUrl" TEXT;
+ALTER TABLE "StudentProfile" ADD COLUMN IF NOT EXISTS "signatureUrl" TEXT;
+ALTER TABLE "StudentProfile" ADD COLUMN IF NOT EXISTS "learningLicenseValidity" TIMESTAMP(3);
