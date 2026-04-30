@@ -59,8 +59,8 @@ Add these secrets in GitHub before enabling the Vercel deployment workflow:
 ### Required Vercel project settings
 
 1. Import the GitHub repository into Vercel.
-2. Set the framework preset to `Services`.
-3. Keep the root directory at the repository root.
+2. Set the root directory to `apps/web`.
+3. Let Vercel auto-detect `Next.js`.
 4. Add production and preview environment variables:
 
 ```bash
