@@ -60,19 +60,19 @@ export function LoginForm() {
 
   return (
     <form className="mt-6 grid gap-4" onSubmit={(event) => event.preventDefault()}>
-      <label className="grid gap-2 text-sm font-medium">
+      <label className="grid gap-2 text-sm font-bold text-brand-ink">
         Email or phone
         <input
-          className="rounded-md border border-black/15 px-3 py-3"
+          className="rounded-md border border-black/15 px-3 py-3 font-semibold"
           onChange={(event) => setIdentifier(event.target.value)}
           placeholder="Enter email or phone"
           value={identifier}
         />
       </label>
-      <label className="grid gap-2 text-sm font-medium">
+      <label className="grid gap-2 text-sm font-bold text-brand-ink">
         Password
         <input
-          className="rounded-md border border-black/15 px-3 py-3"
+          className="rounded-md border border-black/15 px-3 py-3 font-semibold"
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Enter password"
           type="password"
@@ -80,7 +80,7 @@ export function LoginForm() {
         />
       </label>
       <button
-        className="rounded-md bg-brand-teal px-4 py-3 font-semibold text-white disabled:opacity-60"
+        className="rounded-md bg-brand-ink px-4 py-3 font-black text-white shadow-[0_18px_42px_rgba(16,25,22,0.20)] hover:bg-brand-teal disabled:opacity-60"
         disabled={state.status === "loading"}
         onClick={submitLogin}
         type="button"
@@ -88,7 +88,7 @@ export function LoginForm() {
         {state.status === "loading" ? "Logging in..." : "Continue"}
       </button>
       {state.message ? (
-        <p className={state.status === "error" ? "text-sm font-medium text-red-600" : "text-sm font-medium text-brand-teal"}>
+        <p className={state.status === "error" ? "rounded-md bg-red-50 px-3 py-2 text-sm font-bold text-red-600" : "rounded-md bg-brand-mist px-3 py-2 text-sm font-bold text-brand-teal"}>
           {state.message}
         </p>
       ) : null}

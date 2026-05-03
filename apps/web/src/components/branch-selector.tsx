@@ -25,7 +25,7 @@ export function BranchSelector() {
 
   return (
     <select
-      className="rounded-md border border-brand-teal/30 px-3 py-2 text-sm"
+      className="rounded-md border border-black/10 bg-white px-3 py-2 text-sm font-bold text-brand-ink shadow-[0_10px_24px_rgba(16,25,22,0.08)]"
       onChange={(event) => changeBranch(event.target.value)}
       value={selected}
     >
