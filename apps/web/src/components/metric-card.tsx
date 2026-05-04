@@ -8,7 +8,7 @@ export function MetricCard({
   tone?: "teal" | "orange";
 }) {
   return (
-    <div className="premium-card p-5">
+    <div className="rounded-md border border-brand-teal/20 bg-white p-5 shadow-soft">
       <p className="text-sm font-bold text-black/58">{label}</p>
       <p
         className={

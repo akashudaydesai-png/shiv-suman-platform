@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { CalendarDays, Car, CheckCircle2, Clock3, GraduationCap, Medal, Phone, ShieldCheck, Star, Trophy } from "lucide-react";
+import { CalendarDays, Car, CheckCircle2, ChevronLeft, ChevronRight, Clock3, GraduationCap, Medal, Phone, Play, ShieldCheck, Star, Trophy } from "lucide-react";
 import { PublicNav } from "@/components/public-nav";
-import { PremiumPublicSearch } from "@/components/premium-public-search";
 import { apiGet } from "@/lib/api";
 import { fallbackBranches, fallbackCars, fallbackCourses, heroImageUrl, PublicCar, PublicCourse, withFallback } from "@/lib/public-fallbacks";
 
@@ -26,6 +25,9 @@ const courseImages = [
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85"
 ];
 
+const heroCityImage = "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=1800&q=85";
+const mirrorImage = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85";
+
 export default async function HomePage() {
   const liveCars = await apiGet<PublicCar[]>("/public/cars", []);
   const liveCourses = await apiGet<PublicCourse[]>("/public/courses", []);
@@ -38,15 +40,20 @@ export default async function HomePage() {
 
       <section className="relative">
         <div className="absolute inset-0">
-          <img alt="Premium training car on city road" className="h-full w-full object-cover opacity-78" src={heroImageUrl} />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,#04100f_0%,rgba(4,16,15,0.88)_38%,rgba(4,16,15,0.30)_100%)]" />
+          <img alt="City skyline road at sunset" className="h-full w-full object-cover opacity-82" src={heroCityImage} />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,#04100f_0%,rgba(4,16,15,0.88)_38%,rgba(4,16,15,0.32)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(180deg,transparent,#061716)]" />
         </div>
+        <img
+          alt={cars[0]?.name ?? "Shiv Suman training car"}
+          className="pointer-events-none absolute bottom-24 right-4 hidden w-[54vw] max-w-[820px] rounded-md object-contain drop-shadow-[0_34px_42px_rgba(0,0,0,0.55)] lg:block"
+          src={cars[0]?.imageUrl ?? fallbackCars[0].imageUrl}
+        />
 
-        <div className="relative mx-auto grid min-h-[calc(100vh-112px)] max-w-7xl content-center px-5 py-16">
-          <div className="max-w-3xl premium-reveal">
+        <div className="relative mx-auto grid min-h-[calc(100vh-112px)] max-w-7xl content-center px-5 pb-28 pt-16">
+          <div className="max-w-2xl premium-reveal">
             <p className="premium-kicker">25 years of trust. Thousands of safe drivers.</p>
-            <h1 className="mt-5 text-5xl font-black leading-[0.98] tracking-tight md:text-7xl">
+            <h1 className="mt-5 text-5xl font-black uppercase leading-[0.98] tracking-tight md:text-7xl">
               Your path to <span className="text-[#63d6c9]">confident</span> driving
             </h1>
             <p className="mt-5 text-2xl font-semibold text-white/92">Since <span className="text-[#f6bd55]">1998</span></p>
@@ -63,8 +70,6 @@ export default async function HomePage() {
                 <span className="ml-2">-&gt;</span>
               </Link>
             </div>
-
-            <PremiumPublicSearch courses={courses} cars={cars} branches={fallbackBranches} />
           </div>
 
           <div className="mt-10 grid max-w-5xl gap-3 rounded-md border border-white/12 bg-white/8 p-4 backdrop-blur-xl md:grid-cols-4">
@@ -83,18 +88,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative border-y border-white/10 bg-[linear-gradient(135deg,rgba(6,88,82,0.72),rgba(4,16,15,0.92))] px-5 py-12">
-        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-[1fr_180px] md:items-center">
+      <section className="relative -mt-10 rounded-t-[80px] border-y border-white/10 bg-[linear-gradient(135deg,rgba(6,88,82,0.88),rgba(4,16,15,0.96))] px-5 py-12 shadow-[0_-24px_80px_rgba(0,0,0,0.26)]">
+        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-[1fr_220px] md:items-center">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {heroStats.map(([value, label]) => (
-              <div className="rounded-md border border-white/10 bg-white/6 p-5" key={label}>
+              <div className="border-r border-white/12 p-5 last:border-r-0" key={label}>
                 <p className="text-4xl font-black text-[#f6bd55]">{value}</p>
                 <p className="mt-2 text-sm font-black uppercase text-white/82">{label}</p>
               </div>
             ))}
           </div>
-          <Link href="/cars" className="group grid h-28 place-items-center rounded-md border border-[#f6bd55]/50 bg-[#f6bd55]/8 text-center font-black text-[#f6bd55]">
-            <span className="grid h-16 w-16 place-items-center rounded-full border border-[#f6bd55]/70 transition group-hover:scale-105">PLAY</span>
+          <Link href="/cars" className="group flex items-center gap-4 rounded-md text-white">
+            <span className="grid h-20 w-20 place-items-center rounded-full border border-[#f6bd55]/70 text-[#f6bd55] transition group-hover:scale-105"><Play className="h-7 w-7 fill-current" /></span>
+            <span>
+              <span className="block text-sm font-black uppercase">Watch Our Story</span>
+              <span className="mt-1 block text-sm text-white/58">See how we build confident drivers</span>
+            </span>
           </Link>
         </div>
       </section>
@@ -117,7 +126,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="relative">
-            <img alt="Road seen through rear-view mirror" className="h-[360px] w-full rounded-md border border-[#f6bd55]/35 object-cover shadow-[0_28px_90px_rgba(0,0,0,0.34)]" src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=85" />
+            <img alt="Road seen through rear-view mirror" className="h-[360px] w-full rounded-md border border-[#f6bd55]/35 object-cover shadow-[0_28px_90px_rgba(0,0,0,0.34)]" src={mirrorImage} />
             <div className="absolute -bottom-7 right-6 grid h-32 w-32 place-items-center rounded-full border border-[#f6bd55]/60 bg-[#082321] text-center shadow-[0_20px_70px_rgba(0,0,0,0.35)]">
               <span className="text-3xl font-black text-[#f6bd55]">25+</span>
               <span className="-mt-8 text-xs font-black uppercase text-white/70">Years of trust</span>
@@ -193,6 +202,31 @@ export default async function HomePage() {
       </section>
 
       <section className="px-5 pb-20">
+        <div className="mx-auto max-w-7xl text-center">
+          <p className="premium-kicker">What our students say</p>
+          <h2 className="mt-3 text-4xl font-black">Real People. Real Stories.</h2>
+          <div className="mt-8 flex items-center justify-center gap-5">
+            <button className="grid h-12 w-12 place-items-center rounded-full border border-[#f6bd55]/30 text-[#f6bd55]" type="button" aria-label="Previous testimonial">
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="premium-card max-w-2xl p-6 text-left">
+              <div className="flex items-center gap-5">
+                <img alt="Student testimonial" className="h-20 w-20 rounded-full object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=85" />
+                <div>
+                  <div className="flex gap-1 text-[#f6bd55]">{Array.from({ length: 5 }, (_, index) => <Star className="h-4 w-4 fill-current" key={index} />)}</div>
+                  <p className="mt-3 text-base font-semibold text-white/86">Excellent training, very polite and professional staff. I learned a lot and now I drive with full confidence.</p>
+                  <p className="mt-2 text-sm font-bold text-[#63d6c9]">Priya S., Kolhapur</p>
+                </div>
+              </div>
+            </div>
+            <button className="grid h-12 w-12 place-items-center rounded-full border border-[#f6bd55]/30 text-[#f6bd55]" type="button" aria-label="Next testimonial">
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-20">
         <div className="mx-auto grid max-w-7xl gap-5 rounded-md border border-[#f6bd55]/24 bg-[linear-gradient(90deg,rgba(7,35,33,0.94),rgba(7,35,33,0.78)),url('https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1600&q=85')] bg-cover p-8 md:grid-cols-[1fr_280px_260px] md:items-center">
           <div>
             <p className="premium-kicker">Ready to begin?</p>
@@ -212,7 +246,7 @@ export default async function HomePage() {
       </section>
 
       <section className="px-5 pb-10">
-        <div className="mx-auto grid max-w-7xl gap-4 rounded-md border border-white/10 bg-[#030d0c] p-6 text-sm text-white/62 md:grid-cols-[1fr_1fr_1.2fr]">
+        <div className="mx-auto grid max-w-7xl gap-4 rounded-md border border-white/10 bg-[#030d0c] p-6 text-sm text-white/62 md:grid-cols-[1fr_1fr_1.2fr_240px]">
           <div>
             <p className="text-lg font-black text-white">SHIV SUMAN</p>
             <p className="mt-3 max-w-xs">Your trusted partner in building confident, responsible and safe drivers since 1998.</p>
@@ -229,6 +263,11 @@ export default async function HomePage() {
             <p className="font-black uppercase text-white">Contact Info</p>
             <p className="mt-3">Gala No L-10 Waterfront Apartment, Near Rankala D Mart 416012</p>
             <p className="mt-2 text-[#f6bd55]">72491 05382</p>
+          </div>
+          <div className="min-h-32 rounded-md border border-white/10 bg-[linear-gradient(135deg,#e8eef0,#ffffff)] p-4 text-brand-ink">
+            <div className="grid h-full place-items-center rounded-md border border-black/10 bg-white text-center text-sm font-black">
+              Rankala Map
+            </div>
           </div>
         </div>
       </section>
