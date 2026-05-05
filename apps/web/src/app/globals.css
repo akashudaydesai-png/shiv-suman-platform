@@ -11,6 +11,8 @@
   --focus: rgba(0, 121, 111, 0.22);
   --gold: #f6bd55;
   --gold-strong: #f2a51f;
+  --cream: #f4ead4;
+  --cream-soft: #fff6df;
   --deep: #04100f;
   --deep-2: #071d1c;
   --aqua: #1fb6a6;
@@ -122,15 +124,15 @@ tbody tr:hover {
 .premium-shell {
   background:
     radial-gradient(circle at 70% 12%, rgba(31, 182, 166, 0.26), transparent 28%),
-    radial-gradient(circle at 18% 24%, rgba(246, 189, 85, 0.14), transparent 28%),
-    linear-gradient(180deg, #061211 0%, #061716 42%, #082321 72%, #04100f 100%);
+    radial-gradient(circle at 18% 24%, rgba(244, 234, 212, 0.18), transparent 28%),
+    linear-gradient(180deg, #061211 0%, #08211f 42%, #0a3b37 72%, #04100f 100%);
 }
 
 .premium-card {
-  border: 1px solid rgba(31, 182, 166, 0.26);
+  border: 1px solid rgba(244, 234, 212, 0.16);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(11, 37, 35, 0.88), rgba(5, 20, 19, 0.94));
-  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(246, 189, 85, 0.06) inset;
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(244, 234, 212, 0.06) inset;
   backdrop-filter: blur(18px);
 }
 
@@ -143,7 +145,7 @@ tbody tr:hover {
 }
 
 .dark-premium {
-  color: #ffffff;
+  color: var(--cream-soft);
 }
 
 .dark-premium input,
